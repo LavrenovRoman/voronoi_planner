@@ -18,6 +18,9 @@ namespace voronoi_planner {
 
     void visualize(const char *filename, DynamicVoronoi* voronoi, bool** map,
                    std::vector<std::pair<float, float> > *path) {
+					   
+		ROS_INFO("VoronoiPlanner-->visualize()\n");
+					   
         // write pgm files
 
         FILE* F = fopen(filename, "w");
@@ -94,6 +97,9 @@ void VoronoiPlanner::initialize(std::string name, costmap_2d::Costmap2DROS* cost
 }
 
 void VoronoiPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap, std::string frame_id) {
+	
+	ROS_INFO("VoronoiPlanner::initialize()\n");
+	
     if (!initialized_) {
         ros::NodeHandle private_nh("~/" + name);
         costmap_ = costmap;
@@ -135,6 +141,9 @@ void VoronoiPlanner::costmapUpdateCallback(const map_msgs::OccupancyGridUpdate::
 
 
 void VoronoiPlanner::reconfigureCB(voronoi_planner::VoronoiPlannerConfig& config, uint32_t level) {
+	
+	ROS_INFO("VoronoiPlanner::reconfigureCB()\n");
+	
     weight_data_ = config.weight_data;
     weight_smooth_ = config.weight_smooth;
 
@@ -143,6 +152,9 @@ void VoronoiPlanner::reconfigureCB(voronoi_planner::VoronoiPlannerConfig& config
 }
 
 void VoronoiPlanner::clearRobotCell(const tf::Stamped<tf::Pose>& global_pose, unsigned int mx, unsigned int my) {
+	
+	ROS_INFO("VoronoiPlanner::clearRobotCell()\n");
+	
     if (!initialized_) {
         ROS_ERROR(
                 "This planner has not been initialized yet, but it is being used, please call initialize() before use");
@@ -154,6 +166,9 @@ void VoronoiPlanner::clearRobotCell(const tf::Stamped<tf::Pose>& global_pose, un
 }
 
 bool VoronoiPlanner::makePlanService(nav_msgs::GetPlan::Request& req, nav_msgs::GetPlan::Response& resp) {
+	
+	ROS_INFO("VoronoiPlanner::makePlanService()\n");	
+	
     makePlan(req.start, req.goal, resp.plan.poses);
 
     resp.plan.header.stamp = ros::Time::now();
@@ -163,12 +178,18 @@ bool VoronoiPlanner::makePlanService(nav_msgs::GetPlan::Request& req, nav_msgs::
 }
 
 void VoronoiPlanner::mapToWorld(double mx, double my, double& wx, double& wy) {
+	
+	ROS_INFO("VoronoiPlanner::mapToWorld()\n");	
+	
     float convert_offset_ = 0;
     wx = costmap_->getOriginX() + (mx+convert_offset_) * costmap_->getResolution();
     wy = costmap_->getOriginY() + (my+convert_offset_) * costmap_->getResolution();
 }
 
 bool VoronoiPlanner::worldToMap(double wx, double wy, double& mx, double& my) {
+	
+	ROS_INFO("VoronoiPlanner::worldToMap()\n");	
+	
     double origin_x = costmap_->getOriginX(), origin_y = costmap_->getOriginY();
     double resolution = costmap_->getResolution();
 
@@ -192,6 +213,9 @@ bool VoronoiPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geo
 
 bool VoronoiPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
                            double tolerance, std::vector<geometry_msgs::PoseStamped>& plan) {
+	
+	ROS_INFO("VoronoiPlanner::makePlan()\n");		   
+							   
     boost::mutex::scoped_lock lock(mutex_);
     if (!initialized_) {
         ROS_ERROR(
@@ -454,6 +478,8 @@ bool VoronoiPlanner::findPath(std::vector<std::pair<float, float> > *path,
               bool check_is_voronoi_cell,
               bool stop_at_voronoi )
 {
+	ROS_INFO("VoronoiPlanner::findPath()\n");
+	
 //    ROS_INFO("init_x %d, init_y %d, goal_x %d, goal_y %d, check_is_voronoi_cell %d, stop_at_voronoi %d", init_x, init_y, goal_x, goal_y, check_is_voronoi_cell, stop_at_voronoi);
 //    ROS_INFO("isVoronoi(init) %d; isVoronoi(goal) %d", voronoi->isVoronoi(init_x, init_y), voronoi->isVoronoi(goal_x, goal_y) );
     // available movements (actions) of the robot on the grid
@@ -627,6 +653,8 @@ bool VoronoiPlanner::findPath(std::vector<std::pair<float, float> > *path,
 
 void VoronoiPlanner::smoothPath(std::vector<std::pair<float, float> > *path)
 {
+	ROS_INFO("VoronoiPlanner::smoothPath()\n");
+	
     // Make a deep copy of path into newpath
     std::vector<std::pair<float, float> > newpath = *path;
 
@@ -666,6 +694,9 @@ void VoronoiPlanner::smoothPath(std::vector<std::pair<float, float> > *path)
 
 
 void VoronoiPlanner::publishPlan(const std::vector<geometry_msgs::PoseStamped>& path) {
+	
+	ROS_INFO("VoronoiPlanner::publishPlan()\n");
+	
     if (!initialized_) {
         ROS_ERROR(
                 "This planner has not been initialized yet, but it is being used, please call initialize() before use");
@@ -691,6 +722,8 @@ void VoronoiPlanner::publishPlan(const std::vector<geometry_msgs::PoseStamped>& 
 
 void VoronoiPlanner::publishVoronoiGrid(DynamicVoronoi *voronoi)
 {
+	ROS_INFO("VoronoiPlanner::publishVoronoiGrid()\n");
+	
     int nx = costmap_->getSizeInCellsX(), ny = costmap_->getSizeInCellsY();
 
     ROS_WARN("costmap sx = %d,sy = %d, voronoi sx = %d, sy = %d", nx, ny,
