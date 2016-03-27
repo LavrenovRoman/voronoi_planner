@@ -78,12 +78,14 @@ void VoronoiPlanner::outlineMap(unsigned char* costarr, int nx, int ny, unsigned
 VoronoiPlanner::VoronoiPlanner() :
         costmap_(NULL), initialized_(false), publish_voronoi_grid_(true),
         smooth_path_ (true), weight_data_ (0.5), weight_smooth_ (0.3) {
+	ROS_INFO("VoronoiPlanner::VoronoiPlanner()\n");
 }
 
 VoronoiPlanner::VoronoiPlanner(std::string name, costmap_2d::Costmap2D* costmap, std::string frame_id) :
         costmap_(NULL), initialized_(false), publish_voronoi_grid_(true),
         smooth_path_ (true), weight_data_ (0.5), weight_smooth_ (0.3)
 {
+	ROS_INFO("VoronoiPlanner::VoronoiPlanner(...)\n");
     //initialize the planner
     initialize(name, costmap, frame_id);
 }
@@ -93,12 +95,13 @@ VoronoiPlanner::~VoronoiPlanner() {
 }
 
 void VoronoiPlanner::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_ros) {
+	ROS_INFO("VoronoiPlanner::initialize(,)\n");
     initialize(name, costmap_ros->getCostmap(), costmap_ros->getGlobalFrameID());
 }
 
 void VoronoiPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap, std::string frame_id) {
 	
-	ROS_INFO("VoronoiPlanner::initialize()\n");
+	ROS_INFO("VoronoiPlanner::initialize(,,)\n");
 	
     if (!initialized_) {
         ros::NodeHandle private_nh("~/" + name);
@@ -208,13 +211,14 @@ bool VoronoiPlanner::worldToMap(double wx, double wy, double& mx, double& my) {
 
 bool VoronoiPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
                            std::vector<geometry_msgs::PoseStamped>& plan) {
+	ROS_INFO("VoronoiPlanner::makePlan(,,)\n");
     return makePlan(start, goal, default_tolerance_, plan);
 }
 
 bool VoronoiPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
                            double tolerance, std::vector<geometry_msgs::PoseStamped>& plan) {
 	
-	ROS_INFO("VoronoiPlanner::makePlan()\n");		   
+	ROS_INFO("VoronoiPlanner::makePlan(,,,)\n");		   
 							   
     boost::mutex::scoped_lock lock(mutex_);
     if (!initialized_) {
@@ -370,7 +374,7 @@ bool VoronoiPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geo
     {
         //        path3 = findPath( goal, init, A, 0, 1 );
         res3 = findPath( &path3, goal_x, goal_y, start_x, start_y, &voronoi_, 0, 1 );
-        std::cout << "findPath 3 res " << res3 << std::endl;
+        std::cout << "findPath 3 res " << res3 << " size " << path3.size() << std::endl;
         //        goal = path3(end,:);
         goal_x = std::get<0>( path3[path3.size()-1] );
         goal_y = std::get<1>( path3[path3.size()-1] );
@@ -385,7 +389,7 @@ bool VoronoiPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geo
     if( !voronoi_.isVoronoi(start_x,start_y) )
     {
         res1 = findPath( &path1, start_x, start_y, goal_x, goal_y, &voronoi_, 0, 1 );
-        std::cout << "findPath 1 res " << res1 << std::endl;
+        std::cout << "findPath 1 res " << res1 << " size " << path1.size() << std::endl;
         start_x = std::get<0>( path1[path1.size()-1] );
         start_y = std::get<1>( path1[path1.size()-1] );
 
@@ -393,7 +397,7 @@ bool VoronoiPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geo
     }
 
     res2 = findPath( &path2, start_x, start_y, goal_x, goal_y, &voronoi_, 1, 0 );
-    std::cout << "findPath 2 res " << res2 << std::endl;
+    std::cout << "findPath 2 res " << res2 << " size " << path2.size() << std::endl;
 
 
     if(!(res1 && res2 && res3))
@@ -427,7 +431,7 @@ bool VoronoiPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geo
 
 //    visualize("/tmp/plan.ppm", &voronoi_, map, &path1);
 
-
+    std::cout << "findPath size " << path1.size() << std::endl;
     for(int i = 0; i < path1.size(); i++)
     {
 
@@ -440,10 +444,7 @@ bool VoronoiPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geo
         mapToWorld(new_goal.pose.position.x, new_goal.pose.position.y,
                    new_goal.pose.position.x, new_goal.pose.position.y);
 
-//        std::cout << "[" << new_goal.pose.position.x << "; " <<
-//                     new_goal.pose.position.y << "]" << std::endl;
-
-
+        std::cout << "[" << new_goal.pose.position.x << "; " << new_goal.pose.position.y << "]" << std::endl;
 
         new_goal.pose.orientation.x = goal_quat.x();
         new_goal.pose.orientation.y = goal_quat.y();
